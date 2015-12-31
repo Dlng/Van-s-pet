@@ -17,7 +17,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//filename = getcwd(filename, MAXPATHLEN);
 	//strcat(filename, "\\test.png");
  //
-	//PIX* pix = pixRead("d:\\tesseract\\1450449816362.jpg");
+	//PIX* pix = pixRead("..\\PicSamples\\1450449816362.jpg");
 	//if (!pix) {
 	//	printf("Error opening file");
 	//	return 1;
@@ -25,23 +25,23 @@ int _tmain(int argc, _TCHAR* argv[])
 	//printf("Image width : %d", pix->w);
 
 	//PIX* pix_gray8 = pixConvertRGBToGray(pix, 1.0, 1.0, 1.0);
-	//l_int32 ret = pixWrite("d:\\tesseract\\IMG_gray8.PNG", pix_gray8, IFF_PNG);
+	//l_int32 ret = pixWrite("..\\PicSamples\\IMG_gray8.PNG", pix_gray8, IFF_PNG);
 
 
 	//PIX* pix_sobel = pixSobelEdgeFilter(pix_gray8, L_ALL_EDGES);
-	//ret = pixWrite("d:\\tesseract\\IMG_sobel.PNG", pix_sobel, IFF_PNG);
+	//ret = pixWrite("..\\PicSamples\\IMG_sobel.PNG", pix_sobel, IFF_PNG);
 
 	//PIX* pix_TwoSided = pixSobelEdgeFilter(pix_gray8, L_ALL_EDGES);
-	//ret = pixWrite("d:\\tesseract\\IMG_TwoSided.PNG", pix_TwoSided, IFF_PNG);
+	//ret = pixWrite("..\\PicSamplesIMG_TwoSided.PNG", pix_TwoSided, IFF_PNG);
 
 
 	//pixDestroy(&pix);
 
 	
 
-	//const char* image = "D:\\Tesseract\\NumberLine.jpg";//NULL;
-  const char* image = "D:\\Tesseract\\IMG_FullPage.jpg";//NULL;
-  const char* output = "D:\\Tesseract\\dd";//NULL;
+	//const char* image = "..\\PicSamples\\NumberLine.jpg";//NULL;
+  const char* image = "..\\PicSamples\\FullPage.jpg";//NULL;
+  const char* output = "..\\PicSamples\\dd";//NULL;
 
 	tesseract::GraphOCR ocr;
 	STRING text_out;

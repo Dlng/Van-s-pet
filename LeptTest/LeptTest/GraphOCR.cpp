@@ -75,7 +75,7 @@ void GraphOCR::Threshold(Pix** pix) {
       pix_grey_ = thresholder_->GetPixRectGrey();
   }
 
-  l_int32 ret = pixWrite("d:\\tesseract\\IMG_after_PixRectGrey.PNG", pix_grey_, IFF_PNG);
+  l_int32 ret = pixWrite("..\\PicSamples\\IMG_after_PixRectGrey.PNG", pix_grey_, IFF_PNG);
   if (*pix != NULL)
     pixDestroy(pix);
   // Zero resolution messes up the algorithms, so make sure it is credible.
@@ -90,7 +90,7 @@ void GraphOCR::Threshold(Pix** pix) {
                               &rect_width_, &rect_height_,
                               &image_width_, &image_height_);
 
-  ret = pixWrite("d:\\tesseract\\IMG_after_ThresholdToPix.PNG", *pix, IFF_PNG);
+  ret = pixWrite("..\\PicSamples\\IMG_after_ThresholdToPix.PNG", *pix, IFF_PNG);
 
   // Set the internal resolution that is used for layout parameters from the
   // estimated resolution, rather than the image resolution, which may be
