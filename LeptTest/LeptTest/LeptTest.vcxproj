@@ -95,6 +95,7 @@ copy ..\lib\liblept168d.dll $(OutDir)</Command>
     <ClInclude Include="ccutil\tprintf.h" />
     <ClInclude Include="graphBlock.h" />
     <ClInclude Include="GraphOCR.h" />
+    <ClInclude Include="GraphSignature.h" />
     <ClInclude Include="image\imgs.h" />
     <ClInclude Include="MatchResult.h" />
     <ClInclude Include="OCRConfig.h" />
@@ -112,6 +113,7 @@ copy ..\lib\liblept168d.dll $(OutDir)</Command>
     <ClCompile Include="ccutil\tprintf.cpp" />
     <ClCompile Include="graphBlock.cpp" />
     <ClCompile Include="GraphOCR.cpp" />
+    <ClCompile Include="GraphSignature.cpp" />
     <ClCompile Include="image\imgs.cpp" />
     <ClCompile Include="LeptTest.cpp" />
     <ClCompile Include="MatchResult.cpp" />

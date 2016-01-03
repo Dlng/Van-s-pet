@@ -5,6 +5,10 @@
 #include "thresholder.h"
 #include "tprintf.h"
 
+#include "GraphSignature.h"
+
+#define WORDLENGTH 32 
+
 namespace tesseract {
 
 GraphOCR::GraphOCR(void)
@@ -14,6 +18,167 @@ GraphOCR::GraphOCR(void)
 
 GraphOCR::~GraphOCR(void)
 {
+	pixDestroy(&pix_binary_);
+	pixDestroy(&pix_grey_);
+}
+
+bool GraphOCR::Training(const char* folder, const char* trainingDataFile)
+{
+	bool success = true;
+	const unsigned int nTemplates = 12;
+	char* filename = new char[256];
+	Pix *pix;
+	FILE *fp = fopen(trainingDataFile, "wb");
+	if(fp == NULL)
+		return false;
+
+
+	for(int i = 1; i<=nTemplates; i++){
+		strcpy(filename, "\0");
+		sprintf(filename, "%s\\%d.jpg", folder, i);
+
+		Clear();
+		pix = pixRead(filename);
+		if (pix != NULL) {
+
+			SetImage(pix);
+
+			if (pix_binary_ == NULL){
+				Clear();
+				Threshold(&pix_binary_);
+
+				l_int32 ret = pixWrite("..\\PicSamples\\IMG_binary.PNG", pix_binary_, IFF_PNG);
+
+				Pix *chop = ChopMargin(pix_binary_);
+				ret = pixWrite("..\\PicSamples\\IMG_after_ClipRectangle.PNG", chop, IFF_PNG);
+
+				if(chop != NULL){
+
+					GraphSignature graphSign;
+
+					l_uint32 width = pixGetWidth(chop);
+					l_uint32 height = pixGetHeight(chop);
+
+					graphSign.aspectRatio = (double)height / width;
+
+					l_uint32 start, length;
+					//touch spot of the first line
+					l_int32 ret = FindTouchSpotInRow(chop, 0, &start, &length);
+					if(ret == 0){
+						graphSign.touchSpotTop = (double)start / width;
+						graphSign.touchSpotTop_Length = (double)length / width;
+					}
+
+					//touch spot of the latest line
+					ret = FindTouchSpotInRow(chop, height - 1, &start, &length);
+					if(ret == 0){
+						graphSign.touchSpotBottom = (double)start / width;
+						graphSign.touchSpotBottom_Length = (double)length / width;
+					}
+
+					//touch spot of the left column
+					ret = FindTouchSpotInColumn(chop, 0, &start, &length);
+					if(ret == 0){
+						graphSign.touchSpotLeft = (double)start / height;
+						graphSign.touchSpotLeft_Length = (double)length / height;
+					}
+
+					//touch spot of the right column
+					ret = FindTouchSpotInColumn(chop, width - 1, &start, &length);
+					if(ret == 0){
+						graphSign.touchSpotRight = (double)start / height;
+						graphSign.touchSpotRight_Length = (double)length / height;
+					}
+
+					if(!graphSign.Serialize(fp))
+						return false;
+
+					pixDestroy(&pix);	
+					pixDestroy(&chop);	
+				}
+			}
+		}
+	}
+
+	fclose(fp);
+	return false;
+}
+
+l_int32 GraphOCR::FindTouchSpotInRow(Pix *pixs, l_uint32 rowIdx, l_uint32 *touchSpotStart, l_uint32 *touchSpotLength)
+{
+	if(pixs == NULL)
+		return -1;
+	if(pixGetDepth(pixs) != 1)
+		return -1;
+	if(touchSpotLength == NULL || touchSpotStart == NULL)
+		return -1;
+
+	*touchSpotLength = 0, *touchSpotStart = 0;
+
+	l_int32		h = pixGetHeight(pixs);
+	if(rowIdx >= h)
+		return -1;
+	
+	bool		start_pos = false;
+	l_int32		w = pixGetWidth(pixs);
+	l_uint32	*line = pixGetData(pixs) + pixGetWpl(pixs) * rowIdx;
+	l_int32		val = 0;
+	for(int x=0; x<w; x++){
+		val = GET_DATA_BIT(line, x);
+		if(!start_pos){
+			if(val == 1){
+				start_pos = true;
+				*touchSpotStart = x;
+			}
+		}
+		else{
+			if(val == 0){
+				*touchSpotLength = x - *touchSpotStart;
+				return 0;
+			}
+		}
+	}
+
+	return -1;
+}
+
+l_int32 GraphOCR::FindTouchSpotInColumn(Pix *pixs, l_uint32 colIdx, l_uint32 *touchSpotStart, l_uint32 *touchSpotLength)
+{
+	if(pixs == NULL)
+		return -1;
+	if(pixGetDepth(pixs) != 1)
+		return -1;
+	if(touchSpotLength == NULL || touchSpotStart == NULL)
+		return -1;
+
+	*touchSpotLength = 0, *touchSpotStart = 0;
+
+	l_int32		w = pixGetWidth(pixs);
+	if(colIdx >= w)
+		return -1;
+	
+	bool		start_pos = false;
+	l_int32		h = pixGetHeight(pixs);
+	l_int32		val = 0;
+	l_uint32	*line, *data = pixGetData(pixs);
+	for(int y=0; y<h; y++){
+		line = data + pixGetWpl(pixs) * y;
+		val = GET_DATA_BIT(line, colIdx);
+		if(!start_pos){
+			if(val == 1){
+				start_pos = true;
+				*touchSpotStart = y;
+			}
+		}
+		else{
+			if(val == 0){
+				*touchSpotLength = y - *touchSpotStart;
+				return 0;
+			}
+		}
+	}
+
+	return -1;
 }
 
 bool GraphOCR::ProcessPages(const char* filename, STRING* text_out)
@@ -31,14 +196,91 @@ bool GraphOCR::ProcessPages(const char* filename, STRING* text_out)
 			Threshold(&pix_binary_);
 		}
 
+		l_int32 ret = pixWrite("..\\PicSamples\\IMG_binary.PNG", pix_binary_, IFF_PNG);
+
+		Pix *chop = ChopMargin(pix_binary_);
+		ret = pixWrite("..\\PicSamples\\IMG_after_ClipRectangle.PNG", chop, IFF_PNG);
+		pixDestroy(&chop);
+
+
 		//Todo(Van): search GraphBlock in pix_binary_ and saved in a block verctor
 
 		//Todo(Van): matching each block with templates
 
 		//Todo(Van): assemble result and return final result string
+		return true;
 	}
 	
 	return false;
+
+}
+
+Pix *GraphOCR::ChopMargin(Pix *pixs)
+{
+	l_int32 top, bottom;
+
+	NUMA *na = pixCountPixelsByRow(pixs, NULL);
+	if(na != NULL)
+	{
+		l_int32 h = numaGetCount(na);
+		for (int i = 0; i < h; i++) {
+			if(na->array[i] > 0)
+			{
+				top = i;
+				break;
+			}
+			//if(start && na->array[i] > 0)
+			//{
+			//	fprintf(stderr, "array[%d] = %d\n", i, (int)(na->array[i]));
+			//}
+		}
+
+		for (int i = h - 1; i >= 0; i--) {
+			if(na->array[i] > 0)
+			{
+				bottom = i;
+				break;
+			}
+		}
+	}
+	numaDestroy(&na);
+
+	l_int32 left, right;
+	na = pixCountPixelsByColumn(pixs);
+	if(na != NULL)
+	{
+		l_int32 w = numaGetCount(na);
+		for (int i = 0; i < w; i++) {
+			if(na->array[i] > 0)
+			{
+				left = i;
+				break;
+			}
+		}
+
+		for (int i = w - 1; i >= 0; i--) {
+			if(na->array[i] > 0)
+			{
+				right = i;
+				break;
+			}
+		}
+	}
+
+	BOX *box1 = boxCreate(left, top, right - left, bottom - top);
+	Pix *clipRectangle = pixClipRectangle(pix_binary_, box1, NULL);
+	boxDestroy(&box1);
+
+	return clipRectangle;
+}
+
+
+void GraphOCR::PixelsStat()
+{
+	if(pix_binary_ != NULL)
+	{
+
+	}
 
 }
 

@@ -1,4 +1,6 @@
 #pragma once
+
+#include <leptonica\allheaders.h>
 #include "ccutil\strngs.h"
 #include "thresholder.h"
 
@@ -19,6 +21,11 @@ public:
 
 	bool ProcessPages(const char* filename, STRING* text_out);
 
+	bool Training(const char* folder, const char* trainingDataFile);
+
+private:
+	l_int32 FindTouchSpotInRow(Pix *pixs, l_uint32 rowIdx, l_uint32 *touchSpotStart, l_uint32 *touchSpotLength);
+	l_int32 FindTouchSpotInColumn(Pix *pixs, l_uint32 colIdx, l_uint32 *touchSpotStart, l_uint32 *touchSpotLength);
 
 protected:
 
@@ -37,6 +44,10 @@ protected:
    void Threshold(Pix** pix);
 	   
 	void Clear();
+
+	void PixelsStat();
+
+	Pix *ChopMargin(Pix *pixs);
 
 
   ImageThresholder* thresholder_;     ///< Image thresholding module.

@@ -40,12 +40,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 
 	//const char* image = "..\\PicSamples\\NumberLine.jpg";//NULL;
-  const char* image = "..\\PicSamples\\FullPage.jpg";//NULL;
+  //const char* image = "..\\PicSamples\\FullPage.jpg";//NULL;
+  const char* image = "..\\PicSamples\\Dec-17\\12.jpg";//NULL;
+  //const char* image = "..\\PicSamples\\Pic_test01.png";//NULL;
   const char* output = "..\\PicSamples\\dd";//NULL;
 
 	tesseract::GraphOCR ocr;
 	STRING text_out;
-	ocr.ProcessPages(image, &text_out);
+	//ocr.ProcessPages(image, &text_out);
+
+	ocr.Training("..\\PicSamples\\Dec-17", "trainingData");
 	return 0;
 }
 
