@@ -3,6 +3,7 @@
 #include <leptonica\allheaders.h>
 #include "ccutil\strngs.h"
 #include "thresholder.h"
+#include "GraphSignature.h"
 
 namespace tesseract {
 	/**
@@ -19,11 +20,13 @@ public:
 	GraphOCR(void);
 	~GraphOCR(void);
 
-	bool ProcessPages(const char* filename, STRING* text_out);
+	bool ProcessPages(const char* filename, STRING* text_out, const char* trainingDataFile);
 
 	bool Training(const char* folder, const char* trainingDataFile);
 
 private:
+	GraphSignature graphTemplates[12];
+
 	l_int32 FindTouchSpotInRow(Pix *pixs, l_uint32 rowIdx, l_uint32 *touchSpotStart, l_uint32 *touchSpotLength);
 	l_int32 FindTouchSpotInColumn(Pix *pixs, l_uint32 colIdx, l_uint32 *touchSpotStart, l_uint32 *touchSpotLength);
 

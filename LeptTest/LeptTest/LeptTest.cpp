@@ -47,9 +47,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	tesseract::GraphOCR ocr;
 	STRING text_out;
-	//ocr.ProcessPages(image, &text_out);
+	ocr.ProcessPages(image, &text_out, "trainingData");
 
-	ocr.Training("..\\PicSamples\\Dec-17", "trainingData");
+	//ocr.Training("..\\PicSamples\\Dec-17", "trainingData");
 	return 0;
 }
 

@@ -37,14 +37,12 @@ bool GraphOCR::Training(const char* folder, const char* trainingDataFile)
 		strcpy(filename, "\0");
 		sprintf(filename, "%s\\%d.jpg", folder, i);
 
-		Clear();
 		pix = pixRead(filename);
 		if (pix != NULL) {
 
 			SetImage(pix);
 
 			if (pix_binary_ == NULL){
-				Clear();
 				Threshold(&pix_binary_);
 
 				l_int32 ret = pixWrite("..\\PicSamples\\IMG_binary.PNG", pix_binary_, IFF_PNG);
@@ -92,11 +90,18 @@ bool GraphOCR::Training(const char* folder, const char* trainingDataFile)
 
 					if(!graphSign.Serialize(fp))
 						return false;
-
-					pixDestroy(&pix);	
+					if(thresholder_ != NULL)
+					{
+						thresholder_->Clear();
+						delete thresholder_;
+						thresholder_ = NULL;
+					}
+					Clear();
 					pixDestroy(&chop);	
 				}
 			}
+			pixDestroy(&pix);	
+
 		}
 	}
 
@@ -181,8 +186,16 @@ l_int32 GraphOCR::FindTouchSpotInColumn(Pix *pixs, l_uint32 colIdx, l_uint32 *to
 	return -1;
 }
 
-bool GraphOCR::ProcessPages(const char* filename, STRING* text_out)
+bool GraphOCR::ProcessPages(const char* filename, STRING* text_out, const char* trainingDataFile)
 {
+	FILE *fp = fopen(trainingDataFile, "rb");
+	for(int i=0; i<12; i++){
+		GraphSignature* sign = &graphTemplates[i];
+		sign->DeSerialize(fp);
+	}
+	fclose(fp);
+
+
 	bool success = true;
 	Pix *pix;
 	pix = pixRead(filename);
@@ -208,6 +221,8 @@ bool GraphOCR::ProcessPages(const char* filename, STRING* text_out)
 		//Todo(Van): matching each block with templates
 
 		//Todo(Van): assemble result and return final result string
+
+		pixDestroy(&pix);
 		return true;
 	}
 	
@@ -352,6 +367,7 @@ void GraphOCR::Clear() {
   pixDestroy(&pix_binary_);
   //pixDestroy(&cube_binary_);
   pixDestroy(&pix_grey_);
+
   //pixDestroy(&scaled_color_);
   //deskew_ = FCOORD(1.0f, 0.0f);
   //reskew_ = FCOORD(1.0f, 0.0f);
