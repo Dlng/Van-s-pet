@@ -53,43 +53,11 @@ bool GraphOCR::Training(const char* folder, const char* trainingDataFile)
 				if(chop != NULL){
 
 					GraphSignature graphSign;
-
-					l_uint32 width = pixGetWidth(chop);
-					l_uint32 height = pixGetHeight(chop);
-
-					graphSign.aspectRatio = (double)height / width;
-
-					l_uint32 start, length;
-					//touch spot of the first line
-					l_int32 ret = FindTouchSpotInRow(chop, 0, &start, &length);
-					if(ret == 0){
-						graphSign.touchSpotTop = (double)start / width;
-						graphSign.touchSpotTop_Length = (double)length / width;
+					if(FindSignature(chop, &graphSign) == 0){
+						if(!graphSign.Serialize(fp))
+							return false;
 					}
 
-					//touch spot of the latest line
-					ret = FindTouchSpotInRow(chop, height - 1, &start, &length);
-					if(ret == 0){
-						graphSign.touchSpotBottom = (double)start / width;
-						graphSign.touchSpotBottom_Length = (double)length / width;
-					}
-
-					//touch spot of the left column
-					ret = FindTouchSpotInColumn(chop, 0, &start, &length);
-					if(ret == 0){
-						graphSign.touchSpotLeft = (double)start / height;
-						graphSign.touchSpotLeft_Length = (double)length / height;
-					}
-
-					//touch spot of the right column
-					ret = FindTouchSpotInColumn(chop, width - 1, &start, &length);
-					if(ret == 0){
-						graphSign.touchSpotRight = (double)start / height;
-						graphSign.touchSpotRight_Length = (double)length / height;
-					}
-
-					if(!graphSign.Serialize(fp))
-						return false;
 					if(thresholder_ != NULL)
 					{
 						thresholder_->Clear();
@@ -108,6 +76,46 @@ bool GraphOCR::Training(const char* folder, const char* trainingDataFile)
 	fclose(fp);
 	return false;
 }
+
+l_int32 GraphOCR::FindSignature(Pix *pixs, GraphSignature *signature)
+{
+	l_uint32 width = pixGetWidth(pixs);
+	l_uint32 height = pixGetHeight(pixs);
+
+	signature->aspectRatio = (double)height / width;
+
+	l_uint32 start, length;
+	//touch spot of the first line
+	l_int32 ret = FindTouchSpotInRow(pixs, 0, &start, &length);
+	if(ret == 0){
+		signature->touchSpotTop = (double)start / width;
+		signature->touchSpotTop_Length = (double)length / width;
+	}
+
+	//touch spot of the latest line
+	ret = FindTouchSpotInRow(pixs, height - 1, &start, &length);
+	if(ret == 0){
+		signature->touchSpotBottom = (double)start / width;
+		signature->touchSpotBottom_Length = (double)length / width;
+	}
+
+	//touch spot of the left column
+	ret = FindTouchSpotInColumn(pixs, 0, &start, &length);
+	if(ret == 0){
+		signature->touchSpotLeft = (double)start / height;
+		signature->touchSpotLeft_Length = (double)length / height;
+	}
+
+	//touch spot of the right column
+	ret = FindTouchSpotInColumn(pixs, width - 1, &start, &length);
+	if(ret == 0){
+		signature->touchSpotRight = (double)start / height;
+		signature->touchSpotRight_Length = (double)length / height;
+	}
+
+	return 0;
+}
+
 
 l_int32 GraphOCR::FindTouchSpotInRow(Pix *pixs, l_uint32 rowIdx, l_uint32 *touchSpotStart, l_uint32 *touchSpotLength)
 {
@@ -217,6 +225,7 @@ bool GraphOCR::ProcessPages(const char* filename, STRING* text_out, const char* 
 
 
 		//Todo(Van): search GraphBlock in pix_binary_ and saved in a block verctor
+		BOX *box = SplitGraph(pix_binary_);
 
 		//Todo(Van): matching each block with templates
 
@@ -230,6 +239,64 @@ bool GraphOCR::ProcessPages(const char* filename, STRING* text_out, const char* 
 
 }
 
+BOX *GraphOCR::SplitGraph(Pix *pixBinary)
+{
+	NUMA *na = pixCountPixelsByColumn(pixBinary);
+	if(na != NULL)
+	{
+		
+		l_int32 left = -1, right = -1;
+		l_int32 w = numaGetCount(na);
+		for (int i = 0; i < w-1; i++) {
+			if(na->array[i] > 3 && na->array[i+1] > 3)
+			{
+				left = i;
+				for (int j = left + 1; j < w-1 ; j++){
+					if(na->array[j] == 0 && na->array[j+1] == 0){
+						right = j;
+						i = right + 1;
+						break;
+					}
+				}
+
+				if(right != -1){
+					MatchResult result;
+					Recognize(pixBinary, left, right, &result);
+				}
+			}
+
+			left = right = -1;
+		}
+
+	}
+	return NULL;
+}
+
+bool GraphOCR::Recognize(Pix *pixBinary, l_int32 left, l_int32 right, MatchResult *result)
+{
+	fprintf(stderr, "Recognize: [left] = %d, [right] = %d\n", left, right);
+
+	BOX *box1 = boxCreate(left, 0, right - left, pixBinary->h);
+	Pix *clipRectangle = pixClipRectangle(pix_binary_, box1, NULL);
+	boxDestroy(&box1);
+
+	Pix *chop = ChopMargin(clipRectangle);
+	l_int32	ret = pixWrite("..\\PicSamples\\IMG_after_ChopMargin.PNG", chop, IFF_PNG);
+
+
+	GraphSignature sign;
+	if(FindSignature(chop, &sign) == 0){
+
+		for(int i=0; i<12; i++){
+			GraphSignature signTemplate = graphTemplates[i];
+		}
+
+	}
+	pixDestroy(&clipRectangle);
+	return false;
+}
+
+
 Pix *GraphOCR::ChopMargin(Pix *pixs)
 {
 	l_int32 top, bottom;
@@ -239,7 +306,7 @@ Pix *GraphOCR::ChopMargin(Pix *pixs)
 	{
 		l_int32 h = numaGetCount(na);
 		for (int i = 0; i < h; i++) {
-			if(na->array[i] > 0)
+			if(na->array[i] > 3)
 			{
 				top = i;
 				break;
@@ -251,7 +318,7 @@ Pix *GraphOCR::ChopMargin(Pix *pixs)
 		}
 
 		for (int i = h - 1; i >= 0; i--) {
-			if(na->array[i] > 0)
+			if(na->array[i] > 3)
 			{
 				bottom = i;
 				break;
@@ -266,7 +333,7 @@ Pix *GraphOCR::ChopMargin(Pix *pixs)
 	{
 		l_int32 w = numaGetCount(na);
 		for (int i = 0; i < w; i++) {
-			if(na->array[i] > 0)
+			if(na->array[i] > 3)
 			{
 				left = i;
 				break;
@@ -274,7 +341,7 @@ Pix *GraphOCR::ChopMargin(Pix *pixs)
 		}
 
 		for (int i = w - 1; i >= 0; i--) {
-			if(na->array[i] > 0)
+			if(na->array[i] > 3)
 			{
 				right = i;
 				break;
@@ -283,7 +350,7 @@ Pix *GraphOCR::ChopMargin(Pix *pixs)
 	}
 
 	BOX *box1 = boxCreate(left, top, right - left, bottom - top);
-	Pix *clipRectangle = pixClipRectangle(pix_binary_, box1, NULL);
+	Pix *clipRectangle = pixClipRectangle(pixs, box1, NULL);
 	boxDestroy(&box1);
 
 	return clipRectangle;
