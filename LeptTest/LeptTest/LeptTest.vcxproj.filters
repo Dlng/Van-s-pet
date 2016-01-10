@@ -66,6 +66,12 @@
     <ClInclude Include="GraphSignature.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GraphRecognizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphUtility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -114,6 +120,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GraphSignature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphRecognizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphUtility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

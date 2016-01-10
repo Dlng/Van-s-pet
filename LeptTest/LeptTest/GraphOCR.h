@@ -4,6 +4,7 @@
 #include "ccutil\strngs.h"
 #include "thresholder.h"
 #include "GraphSignature.h"
+#include "GraphRecognizer.h"
 #include "MatchResult.h"
 
 namespace tesseract {
@@ -27,12 +28,9 @@ public:
 
 protected:
 
+	
 	GraphSignature graphTemplates[12];
-
-	l_int32 FindSignature(Pix *pixs, GraphSignature *signature);
-	l_int32 FindTouchSpotInRow(Pix *pixs, l_uint32 rowIdx, l_uint32 *touchSpotStart, l_uint32 *touchSpotLength);
-	l_int32 FindTouchSpotInColumn(Pix *pixs, l_uint32 colIdx, l_uint32 *touchSpotStart, l_uint32 *touchSpotLength);
-
+	GraphRecognizer recognize_;
 
 
 	/**
@@ -53,12 +51,7 @@ protected:
 
 	void PixelsStat();
 
-	Pix *ChopMargin(Pix *pixs);
-
 	BOX *SplitGraph(Pix *pixBinary);
-
-	bool Recognize(Pix *pixBinary, l_int32 left, l_int32 right, MatchResult *result);
-
 
 
   ImageThresholder* thresholder_;     ///< Image thresholding module.

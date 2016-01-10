@@ -53,6 +53,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>ccmain;ccutil;ccstruct;..\..\classify;..\..\cube;..\..\cutil;..\..\dict;image;..\..\neural_networks\runtime;..\..\textord;..\..\viewer;..\..\wordrec;.;..\include;..\include\leptonica;..\port;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/D _CRT_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -95,7 +96,9 @@ copy ..\lib\liblept168d.dll $(OutDir)</Command>
     <ClInclude Include="ccutil\tprintf.h" />
     <ClInclude Include="graphBlock.h" />
     <ClInclude Include="GraphOCR.h" />
+    <ClInclude Include="GraphRecognizer.h" />
     <ClInclude Include="GraphSignature.h" />
+    <ClInclude Include="GraphUtility.h" />
     <ClInclude Include="image\imgs.h" />
     <ClInclude Include="MatchResult.h" />
     <ClInclude Include="OCRConfig.h" />
@@ -113,7 +116,9 @@ copy ..\lib\liblept168d.dll $(OutDir)</Command>
     <ClCompile Include="ccutil\tprintf.cpp" />
     <ClCompile Include="graphBlock.cpp" />
     <ClCompile Include="GraphOCR.cpp" />
+    <ClCompile Include="GraphRecognizer.cpp" />
     <ClCompile Include="GraphSignature.cpp" />
+    <ClCompile Include="GraphUtility.cpp" />
     <ClCompile Include="image\imgs.cpp" />
     <ClCompile Include="LeptTest.cpp" />
     <ClCompile Include="MatchResult.cpp" />

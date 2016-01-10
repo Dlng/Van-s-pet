@@ -1,24 +1,32 @@
 #pragma once
+
+#include <leptonica\allheaders.h>
+
 class GraphSignature
 {
 public:
-	double aspectRatio;
+	double aspectRatio_;
 	
-	double touchSpotTop;
-	double touchSpotTop_Length;
-	double touchSpotBottom;
-	double touchSpotBottom_Length;
-	double touchSpotLeft;
-	double touchSpotLeft_Length;
-	double touchSpotRight;
-	double touchSpotRight_Length;
+	double touchSpotTop_;
+	double touchSpotTop_Length_;
+	double touchSpotBottom_;
+	double touchSpotBottom_Length_;
+	double touchSpotLeft_;
+	double touchSpotLeft_Length_;
+	double touchSpotRight_;
+	double touchSpotRight_Length_;
+
+	int matchResult;
 
 public:
 	GraphSignature(void);
 	~GraphSignature(void);
 
-bool GraphSignature::Serialize(FILE* fp);
-bool GraphSignature::DeSerialize(FILE* fp);
+	l_int32 FindSignature(Pix *pixs);
+
+	bool GraphSignature::Serialize(FILE* fp);
+	bool GraphSignature::DeSerialize(FILE* fp);
+
 
 
 };

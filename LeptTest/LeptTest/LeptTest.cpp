@@ -39,7 +39,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	
 
-	const char* image = "..\\PicSamples\\GraphLine.png";//NULL;
+	const char* image = "..\\PicSamples\\Sample1.png";//NULL;
+	//const char* image = "..\\PicSamples\\GraphLine.png";//NULL;
 	//const char* image = "..\\PicSamples\\NumberLine.jpg";//NULL;
 	//const char* image = "..\\PicSamples\\FullPage.jpg";//NULL;
 	//const char* image = "..\\PicSamples\\Dec-17\\12.jpg";//NULL;
